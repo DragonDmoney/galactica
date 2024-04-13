@@ -1,0 +1,11 @@
+words_path = "./words.txt"
+seed = 1
+width = 1200
+height = 1200
+scale = 0.02
+octaves = 2
+persistence = 0.2
+lacunarity = 0.2
+symbol_size = 350
+perplexity = 4
+image_directory = "./images"
