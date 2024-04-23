@@ -5,6 +5,7 @@ import fisheye
 import numpy as np
 import math
 import os
+from matplotlib import pyplot as plt
 
 
 # get a square submap of size size
@@ -19,9 +20,15 @@ def threshold_noise(map, threshold):
     return np.where(map < threshold, 0, 1)
 
 
-# add empty zeros to the edges of the array
-def pad_array(array, padding, constant=1):
-    return np.pad(array, padding, "constant", constant_values=constant)
+def pad_colorized_array(array, padding):
+    pad_width = [(padding, padding), (padding, padding), (0, 0)]
+    constant_values = [(255, 255), (255, 255), (255, 255)]
+    return np.pad(array, pad_width, mode="constant", constant_values=constant_values)
+
+
+def pad_array(array, padding):
+    pad_width = [(padding, padding), (padding, padding)]
+    return np.pad(array, pad_width, mode="constant", constant_values=0)
 
 
 def generate_shapes(
@@ -36,7 +43,10 @@ def generate_shapes(
     for i, point in tqdm(enumerate(points)):
         submap = square(map, int(point[0]), int(point[1]), symbol_size)
 
-        submap = pad_array(submap, symbol_size)
+        if len(submap.shape) == 3:  # colorized, likely RGB
+            submap = pad_colorized_array(submap, symbol_size)
+        else:
+            submap = pad_array(submap, symbol_size)
 
         F = fisheye.fisheye(R=(symbol_size / 2) * math.sqrt(2), d=5)
         F.set_focus([symbol_size * 1.5, symbol_size * 1.5])

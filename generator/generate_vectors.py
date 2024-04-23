@@ -1,6 +1,7 @@
 from typing import Tuple
 from .cache import get_cache, save_cache
 import gensim.downloader as api
+from tqdm import tqdm
 
 
 def generate_vectors(words: Tuple[str]):
@@ -18,7 +19,7 @@ def generate_vectors(words: Tuple[str]):
 
     vectors = []
 
-    for word in words:
+    for word in tqdm(words):
         try:
             embedding = model[word]
             vectors.append(embedding)
