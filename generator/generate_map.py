@@ -23,9 +23,12 @@ def generate_noise_map(width, height, scale, octaves, persistence, lacunarity, s
 
 
 # receive a map and colorize it by overlaying a colormap
-def colorize_map(map, scale, octaves, persistence, lacunarity, seed, number_colors=10):
+def colorize_map(map, scale, octaves, persistence, lacunarity, seed, number_colors=20):
     color_map = generate_noise_map(
         map.shape[0], map.shape[1], scale, octaves, persistence, lacunarity, seed
+    )
+    color_map = (color_map - np.min(color_map)) / (
+        np.max(color_map) - np.min(color_map)
     )
 
     colorized_map = np.ones((map.shape[0], map.shape[1], 3))
@@ -93,7 +96,7 @@ if __name__ == "__main__":
     plt.imshow(map, cmap="gray")
     plt.show()
 
-    colorized_map = colorize_map(map, 0.002, 2, 0.2, 0.2, 2)
+    colorized_map = colorize_map(map, 0.001, 2, 0.2, 0.2, 2, 8)
 
     plt.imshow(colorized_map)
     plt.show()
