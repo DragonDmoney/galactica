@@ -85,7 +85,7 @@ $(document).ready(function () {
 
   function timer(data) {
     console.log("timer");
-    $("#timer").text("10");
+    $("#timer").text("7");
 
     $("#guessInput").prop("disabled", true);
     $("#guessButton").prop("disabled", true);
@@ -134,7 +134,7 @@ $(document).ready(function () {
 
     $("#gameImage").attr(
       "src",
-      url + "/images/" + data.images[data.current_image]
+      url + "/image/" + userToken + `?v=${new Date().getTime()}`
     );
     $("#wordBank").text(data.labels.join(" "));
 

@@ -10,16 +10,18 @@ CORS(app)
 
 
 class Test:
-    def __init__(self, images, final_test=False):
+    def __init__(self, images, path, final_test=False):
         self.current_image = 0
         self.attempts = 0
         self.images = images
 
         self.const_images = images.copy()
 
+        print(images)
         coords = [image.split("-")[1].split(".")[0] for image in images]
         self.coordinates = [tuple(map(int, coord[1:-1].split(","))) for coord in coords]
         self.labels = [image.split("-")[0] for image in images]
+        self.path = path
 
         print(self.labels)
 
@@ -28,6 +30,32 @@ class Test:
         self.done = False
         self.text = ""
         self.final_test = final_test
+
+    def get_current_image_path(self):
+        return self.path + self.images[self.current_image]
+
+class GreekTest:
+    def __init__(self, images, path, final_test=False):
+        self.current_image = 0
+        self.attempts = 0
+        self.images = images
+
+        self.const_images = images.copy()
+
+        self.labels = [image.split(".")[0] for image in images]
+        self.path = path
+
+        print(self.labels)
+
+        self.distances = []
+        self.first_try = True
+        self.done = False
+        self.text = ""
+        self.final_test = final_test
+
+    def get_current_image_path(self):
+        print(self.path, self.current_image, self.images[self.current_image])
+        return self.path + self.images[self.current_image]
 
 
 class User:
@@ -47,8 +75,13 @@ def create_user(id):
     images = os.listdir("images-resized")
     random.shuffle(images)
 
-    user.tests.append(Test(images[32:]))
-    user.tests.append(Test(images[:32]))
+    user.tests.append(Test(images=images, path="images-resized/"))
+
+    images = os.listdir("greek-images/")
+    random.seed(1)
+    random.shuffle(images)
+
+    user.tests.append(GreekTest(images=images, path="greek-images/", final_test=True))
 
     return user
 
@@ -119,18 +152,18 @@ def index():
         else:
             test.first_try = False
             guess_index = test.labels.index(guess)
-            distance = np.sqrt(
-                np.sum(
-                    np.square(
-                        np.subtract(
-                            test.coordinates[test.current_image],
-                            test.coordinates[guess_index],
-                        )
-                    )
-                )
-            )
-            distance = round(distance, 3)
-            test.distances.append([distance, guess, test.labels[test.current_image]])
+            # distance = np.sqrt(
+            #     np.sum(
+            #         np.square(
+            #             np.subtract(
+            #                 test.coordinates[test.current_image],
+            #                 test.coordinates[guess_index],
+            #             )
+            #         )
+            #     )
+            # )
+            # distance = round(distance, 3)
+            test.distances.append([0, guess, test.labels[test.current_image]])
 
             # test.text = f"Incorrect; distance: {distance}; actual: {test.labels[test.current_image]}; guess: {guess}"
             test.text = (
@@ -146,9 +179,25 @@ def index():
     return flask.jsonify(data)
 
 
-@app.route("/images/<string:id>.png")
-def images(id):
-    return flask.send_from_directory("images-resized", id + ".png")
+@app.route("/image/<token>")
+def images(token):
+    user = load_user(token)
+
+    if user is None:
+        return flask.jsonify({"error": "no user"})
+    
+    t = None
+
+    for test in user.tests:
+        if test.done:
+            continue
+
+        t = test
+
+    image = t.get_current_image_path()
+    print(image)
+
+    return flask.send_from_directory(directory=image.split("/")[0], path=image.split("/")[1])
 
 
 if __name__ == "__main__":
